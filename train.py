@@ -10,14 +10,6 @@ import pandas as pd
 from azureml.core.run import Run
 from azureml.data.dataset_factory import TabularDatasetFactory
 
-# TODO: Create TabularDataset using TabularDatasetFactory
-# Data is located at:
-# "https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv"
-
-data_path = "https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv"
-
-
-
 run = Run.get_context()
 
 def clean_data(data):
@@ -45,7 +37,7 @@ def clean_data(data):
     x_df["poutcome"] = x_df.poutcome.apply(lambda s: 1 if s == "success" else 0)
 
     y_df = x_df.pop("y").apply(lambda s: 1 if s == "yes" else 0)
-    return x_df, y_df
+    return x_df, y_df # Added return statements for cleaned x and y
     
 
 def main():
@@ -60,20 +52,31 @@ def main():
     run.log("Regularization Strength:", np.float(args.C))
     run.log("Max iterations:", np.int(args.max_iter))
 
-    # ds = ### YOUR CODE HERE ###
+    # TODO: Create TabularDataset using TabularDatasetFactory
+    # Data is located at:
+    # "https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv"
+    ### YOUR CODE HERE ###
+    
+    ## Added code to inport TabularDataset using TabularDatasetFactory Class
     factory = TabularDatasetFactory()
     train_data_path = "https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv"
-    ds = factory.from_delimited_files(path=train_data_path,)
+    ds = factory.from_delimited_files(path=train_data_path)
 
+    # Clean the data
     x, y = clean_data(ds)
 
     # TODO: Split data into train and test sets.
-
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
     ### YOUR CODE HERE ###
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
 
+    # Fit model using Logistic Regression with inpur arguments C -> regularization strength 
+    # Importance of Regularization in Logistic regression: 
+    # https://stackoverflow.com/questions/22851316/what-is-the-inverse-of-regularization-strength-in-logistic-regression-how-shoul
+    # https://www.coursera.org/lecture/machine-learning/regularized-logistic-regression-4BHEy
+    
     model = LogisticRegression(C=args.C, max_iter=args.max_iter).fit(x_train, y_train)
 
+    # Download best model using the joblib library
     os.makedirs('outputs', exist_ok=True)
     joblib.dump(model, 'outputs/model.joblib')
     
